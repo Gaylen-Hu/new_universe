@@ -9,16 +9,13 @@ import { PERMISSIONS_KEY } from './permissions.decorator';
 export class PermissionsGuard implements CanActivate {
     constructor(private reflector: Reflector, private readonly userService: UserService) {}
     async canActivate(context: ExecutionContext): Promise<boolean> {
-        console.log('PermissionsGuard');
+      console.log('request.user', 111111111);
         const request = context.switchToHttp().getRequest();
-        console.log("requestrequest")
         // if (!request.user) {
         //     return true;
         //   }
-          console.log('PermissionsGuard11',request);
+       
         const userId = request.user.userId; // 假设用户信息保存在 request.user 中
-        console.log('PermissionsGuard',request.user);
-        console.log('PermissionsGuard',userId);
         const requiredPermissions = this.reflector.get<string[]>(PERMISSIONS_KEY, context.getHandler());
     
         if (!requiredPermissions) {

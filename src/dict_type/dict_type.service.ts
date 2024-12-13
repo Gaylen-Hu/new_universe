@@ -3,7 +3,7 @@ import { CreateDictTypeDto } from './dto/create-dict_type.dto';
 import { UpdateDictTypeDto } from './dto/update-dict_type.dto';
 import { DictType } from './entities/dict_type.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In ,Between} from 'typeorm';
 
 
 @Injectable()
@@ -38,7 +38,66 @@ export class DictTypeService {
     return this.findOne(id);
   }
 
-  async remove(id: number) {
-    await this.dictTypeRepository.delete(id);
+  async remove(ids: string) {
+    const idArr = ids.split(',');
+    for (let i = 0; i < idArr.length; i++) {
+      const id = idArr[i];
+      const dictType = await this.dictTypeRepository.delete(id);
+      if (!dictType) {
+        return { status: 1, message: '数据不存在' };
+      }
+    }
+  }
+
+  async list(query: any): Promise<any> {
+    const { pageNum = 1, pageSize = 10, dictName, dictType, beginTime, endTime } = query;
+    const where: any = {};
+    if (dictName) {
+      where.dictName = In(dictName.split(','));
+    }
+    if (dictType) {
+      where.dictType = In(dictType.split(','));
+    }
+    if (beginTime) {
+      where.createTime = Between(beginTime.split(',')[0], beginTime.split(',')[1]);
+    }
+    if (endTime) {
+      where.updateTime = Between(endTime.split(',')[0], endTime.split(',')[1]);
+    }
+    const [list, total] = await this.dictTypeRepository.findAndCount({
+      where,
+      take: +pageSize,
+      skip: (+pageNum - 1) * +pageSize,
+    });
+    return {
+      rows: list,
+      total,
+      pageNum: +pageNum,
+      pageSize: +pageSize,
+    };
+
+  }
+  async optionselect() {
+    return await this.dictTypeRepository.find();
+  }
+  async export(query: any) {
+    const { dictName, dictType, beginTime, endTime } = query;
+    const where: any = {};
+    if (dictName) {
+      where.dictName = In(dictName.split(','));
+    }
+    if (dictType) {
+      where.dictType = In(dictType.split(','));
+    }
+    if (beginTime) {
+      where.createTime = Between(beginTime.split(',')[0], beginTime.split(',')[1]);
+    }
+    if (endTime) {
+      where.updateTime = Between(endTime.split(',')[0], endTime.split(',')[1]);
+    }
+    const list = await this.dictTypeRepository.find({
+      where,
+    });
+    return list;
   }
 }

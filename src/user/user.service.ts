@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
+import { InjectRepository , } from '@nestjs/typeorm';
+import { Repository, In ,Between} from 'typeorm';
 import { SysUser } from './entities/user.entity';
 import { Role } from '../role/entities/role.entity';
 import { Menu } from '../menu/entities/menu.entity';
@@ -43,9 +43,11 @@ export class UserService {
   }
 
   async findOne(id: number): Promise<SysUser> {
+    console.log('findOne id', id);
     return await this.userRepository.findOne({ where: { userId: id } });
   }
   async findById(id: number): Promise<SysUser> {
+    console.log('findById id', id);
     return await this.userRepository.findOne({ where: { userId: id } });
   }
 
@@ -67,6 +69,7 @@ export class UserService {
   // 获取菜单的所有权限(菜单表下的perms字段)
 
   async findUserPermissions(userId: number): Promise<string[]> {
+    console.log('findUserPermissions userId', userId);
     // Step 1: 查找用户的所有角色
     const userRoles = await this.userRoleRepository.find({ where: { userId } });
     const roleIds = userRoles.map(ur => ur.roleId);
@@ -81,9 +84,26 @@ export class UserService {
 
     return permissions;
   }
+  async export(query: any): Promise<any> {
+    const { userName, phonenumber, params } = query;
+    const where: any = {};
+    if (userName) {
+      where.userName = userName;
+    }
+    if (phonenumber) {
+      where.phonenumber = phonenumber;
+    }
+    if (params) {
+      if (params.beginTime && params.endTime) {
+        where.createTime = Between(params.beginTime, params.endTime);
+      }
+    }
+    const users = await this.userRepository.find({ where });
+    return users;
+  }
   
   async findUserDetails(userId: number): Promise<any> {
-    console.log('userId:', userId);
+    console.log('findUserDetails userId', userId);
     const user = await this.userRepository.findOne({ where: { userId } });
     if (!user) {
       return {
@@ -91,15 +111,12 @@ export class UserService {
         code: 404,
       };
     }
-    console.log('user111111:', user);
    
     // 获取用户角色
     const userRoles = await this.userRoleRepository.find({ where: { userId }, relations: ['role'] });
     const roleIds = userRoles.map(userRole => userRole.roleId);
-    console.log('user111111:', userRoles, roleIds);
     // 获取角色
     const roles = await this.roleRepository.find({ where: { roleId: In(roleIds) } });
-
     // 获取角色的菜单权限
     const roleMenus = await this.roleMenuRepository.find({ where: { roleId: In(roleIds) } });
     const menuIds = roleMenus.map(roleMenu => roleMenu.menuId);
@@ -119,7 +136,6 @@ export class UserService {
       roleKey: role.roleKey,
       // 在角色中不直接包含菜单信息
     }));
-
     const userDto: UserDto = {
       userId: user.userId,
       deptId: user.deptId, // 可能需要根据 deptId 查询部门详细信息
@@ -133,13 +149,39 @@ export class UserService {
       roles: rolesDto,
       roleIds: roleIds,
     };
-
     return {
       msg: '操作成功',
       code: 200,
       permissions,
       roles: rolesDto.map(role => role.roleKey),
       user: userDto,
+    };
+  }
+  async list(query: any): Promise<any> {
+    const { pageNum, pageSize, userName, phonenumber, params } = query;
+    const where: any = {};
+    if (userName) {
+      where.userName = userName;
+    }
+    if (phonenumber) {
+      where.phonenumber = phonenumber;
+    }
+    if (params) {
+      if (params.beginTime && params.endTime) {
+        where.createTime = Between(params.beginTime, params.endTime);
+      }
+    }
+    const [users, total] = await this.userRepository.findAndCount({
+      where,
+      order: { createTime: 'DESC' },
+      take: pageSize,
+      skip: (pageNum - 1) * pageSize,
+    });
+    return {
+      msg: '查询成功',
+      code: 200,
+      rows: users,
+      total,
     };
   }
  

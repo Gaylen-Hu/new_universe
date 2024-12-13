@@ -20,6 +20,10 @@ export class DeptController {
   findAll() {
     return this.deptService.findAll();
   }
+  @Get('deptTree')
+  deptTree() {
+    return this.deptService.deptTree();
+  }
 
   @Get(':id')
   findOne(@Param('id') id: string) {

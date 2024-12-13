@@ -16,10 +16,10 @@ export class CreateDictDatumDto {
     @Length(1, 100)
     dictValue: string;
 
-    @IsNotEmpty()
-    @IsString()
-    @Length(1, 100)
-    dictType: string;
+        @IsNotEmpty()
+        @IsString()
+        @Length(1, 100)
+        dictType: string;
 
     @IsOptional()
     @IsString()

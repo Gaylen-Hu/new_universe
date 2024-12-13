@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { Role } from './entities/role.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In ,Between} from 'typeorm';
 @Injectable()
 export class RoleService {
   constructor(
@@ -31,5 +32,32 @@ export class RoleService {
 
   async remove(id: number) {
     await this.roleRepository.delete(id); 
+  }
+  async list(query: any): Promise<any> {
+    const { page = 1, pageSize = 10, roleName, roleCode, createTime, updateTime } = query;
+    const where: any = {};
+    if (roleName) {
+      where.roleName = In(roleName.split(','));
+    }
+    if (roleCode) {
+      where.roleCode = In(roleCode.split(','));
+    }
+    if (createTime) {
+      where.createTime = Between(createTime.split(',')[0], createTime.split(',')[1]);
+    }
+    if (updateTime) {
+      where.updateTime = Between(updateTime.split(',')[0], updateTime.split(',')[1]);
+    }
+    const [list, total] = await this.roleRepository.findAndCount({
+      where,
+      take: +pageSize,
+      skip: (+page - 1) * +pageSize,
+    });
+    return {
+      rows: list,
+      total,
+      page: +page,
+      pageSize: +pageSize,
+    };
   }
 }

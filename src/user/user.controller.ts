@@ -1,10 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete,UseGuards ,Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete,UseGuards ,Req,Res } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { Request } from 'express';
 import { AuthGuard } from '../auth/auth.guard';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import * as XLSX from 'xlsx';
+import { Request,Response  } from 'express';
 
 @ApiTags('用户管理')
 @Controller('user')
@@ -30,9 +31,6 @@ export class UserController {
   @Get('info')
   @UseGuards(AuthGuard)
   async getUserInfo(@Req() req: any) {
-    console.log('req.user', req);
-    console.log('getUserInfo 方法被调用');
-    console.log(req.user);
     const userId = req.user?.userId; // 从请求中获取 userId
         if (!userId) {
       return {
@@ -43,15 +41,28 @@ export class UserController {
     return this.userService.findUserDetails(userId);
   }
 
-
-
-  @ApiOperation({ summary: '根据ID获取用户' })
-  @ApiResponse({ status: 200, description: '成功返回用户信息。' })
-  @ApiResponse({ status: 404, description: '用户未找到。' })
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.userService.findOne(+id);
+  @ApiOperation({ summary: '获取用户列表' })
+  @ApiResponse({ status: 200, description: '成功返回用户列表。' })
+  @Get('list')
+  async list(@Req() req: Request) {
+    return this.userService.list(req.query);
   }
+
+  @ApiOperation({ summary: '导出用户列表' })
+  @ApiResponse({ status: 200, description: '成功返回用户列表。' })
+  @Post('export')
+  async export(@Body() query: any, @Res() res: Response) {
+    const data = await this.userService.export(query);
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+    const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+    res.setHeader('Content-Disposition', 'attachment; filename="dict_data.xlsx"');
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.end(buffer); // 返回文件内容
+
+  }
+
 
   
   @ApiOperation({ summary: '更新用户信息' })
@@ -73,23 +84,17 @@ export class UserController {
 
 
 
- 
+
+
   
-  // @ApiOperation({ summary: '获取用户信息' })
-  // @ApiResponse({ status: 200, description: '成功返回用户信息。' })
-  // @ApiResponse({ status: 401, description: '用户未登录。' })
-  // @Get('info')
-  // @UseGuards(AuthGuard)
-  // async getUserInfo(@Req() req: any) {
-  //   console.log('req.user', req);
-  //   console.log(req.user);
-  //   const userId = req.user?.userId; // 从请求中获取 userId
-  //   if (!userId) {
-  //     return {
-  //       msg: '用户未登录',
-  //       code: 401,
-  //     };
-  //   }
-  //   return this.userService.findUserDetails(userId);
-  // }
+  @ApiOperation({ summary: '根据ID获取用户' })
+  @ApiResponse({ status: 200, description: '成功返回用户信息。' })
+  @ApiResponse({ status: 404, description: '用户未找到。' })
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    console.log('findOne id111', id);
+
+    return this.userService.findOne(+id);
+  }
+
 }

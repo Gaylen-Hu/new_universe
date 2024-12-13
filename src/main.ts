@@ -6,11 +6,21 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { ResponseInterceptor } from './common/filters/response.interceptor';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import rateLimit from 'express-rate-limit';
+import * as express from 'express';
+
+
 
 async function bootstrap() {
   console.log('Initializing Nest application...');
   
   const app = await NestFactory.create(AppModule);
+
+  // 强制使用 Express
+  const expressApp = app.getHttpAdapter().getInstance() as express.Express;
+
+  // 设置 Express 的 trust proxy
+  expressApp.set('trust proxy', 1); // 启用 trust proxy
+
   app.enableCors({
     origin: true, 
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',

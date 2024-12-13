@@ -12,7 +12,6 @@ export class AuthController {
     @ApiResponse({ status: 200, description: '成功返回token。' })
     @Post('login')
     async login(@Body() body) {
-        console.log(body);
         const user = await this.authService.validateUser(body.username, body.password);
         if (!user) {
             return { msg: '操作失败', code: 401 };
@@ -24,7 +23,6 @@ export class AuthController {
     @ApiOperation({ summary: '用户登出' })
     @Post('logout')
     async logout(@Body() body) {
-        console.log(body);
         return { msg: '操作成功', code: 200 };
     }
 }

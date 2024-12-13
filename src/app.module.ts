@@ -14,6 +14,8 @@ import { DictTypeModule } from './dict_type/dict_type.module';
 import { DictDataModule } from './dict_data/dict_data.module';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
+import { ConfigsModule } from './configs/configs.module';
+
 import { SysUser } from './user/entities/user.entity'; 
 import { Post } from './post/entities/post.entity'; 
 import { Dept } from './dept/entities/dept.entity'; 
@@ -25,10 +27,14 @@ import { UserPost } from './user_post/entities/user_post.entity';
 import { DictType } from './dict_type/entities/dict_type.entity'; 
 import { DictDatum } from './dict_data/entities/dict_datum.entity';
 import { Contact } from './contact/entities/contact.entity';
+import { Config } from './configs//entities/configs.entity'; // 使用正确的实体名
+
 import { UserRoleModule } from './user_role/user_role.module';
 import {UserRole } from './user_role/entities/user_role.entity';
 import { ContactModule } from './contact/contact.module';
 import { ConfigModule,ConfigService } from '@nestjs/config';
+
+
 @Module({
   controllers: [AppController],
   providers: [AppService],
@@ -44,7 +50,7 @@ import { ConfigModule,ConfigService } from '@nestjs/config';
         username: configService.get('DATABASE_USERNAME'),
         password: configService.get('DATABASE_PASSWORD'),
         database: configService.get('DATABASE_NAME'),
-        entities: [SysUser,RoleMenu,RoleDept,UserPost,Menu,Post,Role,DictType,DictDatum,Dept,Contact,UserRole],
+        entities: [SysUser,RoleMenu,RoleDept,UserPost,Menu,Post,Role,DictType,DictDatum,Dept,Contact,UserRole,Config],
         synchronize: true,
       }),
     }),
@@ -61,6 +67,7 @@ import { ConfigModule,ConfigService } from '@nestjs/config';
     AuthModule,
     UserRoleModule,
     ContactModule,
+    ConfigsModule,
   ],
 })
 export class AppModule {}

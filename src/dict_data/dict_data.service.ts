@@ -31,4 +31,29 @@ export class DictDataService {
   async remove(id: number) {
     await this.dictDatumRepository.delete(id);
   }
+
+  async list(query: any): Promise<any> {
+    const { pageNum = 1, pageSize = 10, dictType, dictLabel } = query;
+    const where: any = {};
+    if (dictType) {
+      where.dictType = dictType;
+    }
+    if (dictLabel) {
+      where.dictLabel = dictLabel;
+    }
+    const [list, total] = await this.dictDatumRepository.findAndCount({
+      where,
+      take: +pageSize,
+      skip: (+pageNum - 1) * +pageSize,
+    });
+    return {
+      rows:list,
+      total,
+      pageNum: +pageNum,
+      pageSize: +pageSize,
+    };
+  }
+  async getDictDataByType(dictType: string) {
+    return await this.dictDatumRepository.find({ where: { dictType } });
+  }
 }
