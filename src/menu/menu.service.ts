@@ -14,7 +14,11 @@ export class MenuService {
     private readonly menuRepository: Repository<Menu>,
   ) { }
   async create(createMenuDto: CreateMenuDto) {
-    const menu = this.menuRepository.create(createMenuDto);
+    console.log('createMenuDto', createMenuDto);
+    const menus = plainToClass(Menu, createMenuDto);
+    console.log('menus', menus);
+    const menu = this.menuRepository.create(menus);
+    console.log('menu', menu);
     return this.menuRepository.save(menu);
   }
 
@@ -31,7 +35,8 @@ export class MenuService {
   }
 
   async update(id: number, updateMenuDto: UpdateMenuDto) {
-    await this.menuRepository.update(id, updateMenuDto);
+    const menus = plainToClass(Menu, updateMenuDto);
+    await this.menuRepository.update(id, menus);
     return this.findOne(id);
   }
 
@@ -84,18 +89,7 @@ export class MenuService {
     const allMenus = await this.menuRepository.find(); // 查询所有部门
     return this.buildMenuTree(allMenus, 0); // 从根节点（parentId = 0）开始构建树
   }
-  private buildMenuTree(menus: Menu[], parentId: number): any[] {
-    const result = [];
-    for (const menu of menus.filter(d => d.parent_id == parentId)) {
-      const children = this.buildMenuTree(menus, menu.menu_id); // 找到子节点
-      result.push({
-        id: menu.menu_id,
-        label: menu.menu_name,
-        children: children.length > 0 ? children : null, // 如果没有子节点返回 null
-      });
-    }
-    return result;
-  }
+
 
   async list(query: any): Promise<any> {
     const { page = 1, pageSize = 999999, menu_name, createTime, updateTime } = query;
@@ -115,11 +109,22 @@ export class MenuService {
       skip: (+page - 1) * +pageSize,
     });
     return {
-      rows: list,
+      rows:  list,
       total,
       page: +page,
       pageSize: +pageSize,
     };
   }
-
+  private buildMenuTree(menus: Menu[], parentId: number): any[] {
+    const result = [];
+    for (const menu of menus.filter(d => d.parent_id == parentId)) {
+      const children = this.buildMenuTree(menus, menu.menu_id); // 找到子节点
+      result.push({
+        id: menu.menu_id,
+        label: menu.menu_name,
+        children: children.length > 0 ? children : null, // 如果没有子节点返回 null
+      });
+    }
+    return result;
+  }
 }

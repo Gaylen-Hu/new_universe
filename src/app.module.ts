@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
+
 import { DeptModule } from './dept/dept.module';
 import { PostModule } from './post/post.module';
 import { RoleModule } from './role/role.module';
@@ -28,15 +29,22 @@ import { DictType } from './dict_type/entities/dict_type.entity';
 import { DictDatum } from './dict_data/entities/dict_datum.entity';
 import { Contact } from './contact/entities/contact.entity';
 import { Config } from './configs//entities/configs.entity'; // 使用正确的实体名
-
+import { Tag }    from './tag/entities/tag.entity';
+import { Blog }   from './blogs/entities/blog.entity';
+import { BlogStats }   from './blogs/entities/blog-stats.entity';
 import { UserRoleModule } from './user_role/user_role.module';
 import {UserRole } from './user_role/entities/user_role.entity';
 import { ContactModule } from './contact/contact.module';
 import { ConfigModule,ConfigService } from '@nestjs/config';
+import { MonitorModule } from './monitor/monitor.module';
+import { BlogsModule } from './blogs/blogs.module';
+import { TagModule } from './tag/tag.module';
+
+import { AiModule } from './ai/ai.module';
 
 
 @Module({
-  controllers: [AppController],
+  controllers: [AppController ],
   providers: [AppService],
   imports: [
     ConfigModule.forRoot(),
@@ -50,7 +58,7 @@ import { ConfigModule,ConfigService } from '@nestjs/config';
         username: configService.get('DATABASE_USERNAME'),
         password: configService.get('DATABASE_PASSWORD'),
         database: configService.get('DATABASE_NAME'),
-        entities: [SysUser,RoleMenu,RoleDept,UserPost,Menu,Post,Role,DictType,DictDatum,Dept,Contact,UserRole,Config],
+        entities: [SysUser,RoleMenu,RoleDept,UserPost,Menu,Post,Role,DictType,DictDatum,Dept,Contact,UserRole,Config,Tag,Blog,BlogStats],
         synchronize: true,
       }),
     }),
@@ -68,6 +76,10 @@ import { ConfigModule,ConfigService } from '@nestjs/config';
     UserRoleModule,
     ContactModule,
     ConfigsModule,
+    MonitorModule,
+    BlogsModule,
+    TagModule,
+    AiModule,
   ],
 })
 export class AppModule {}

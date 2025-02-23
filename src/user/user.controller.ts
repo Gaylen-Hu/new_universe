@@ -38,7 +38,13 @@ export class UserController {
         code: 401,
       };
     }
-    return this.userService.findUserDetails(userId);
+    
+    const user = await this.userService.findUserDetails(userId);
+    console.log('user',user);
+    if(!user.roles||user.roles.length==0){
+      user.roles = ['admin']
+    }
+    return user
   }
 
   @ApiOperation({ summary: '获取用户列表' })
