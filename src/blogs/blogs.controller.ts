@@ -55,6 +55,14 @@ export class BlogsController {
   findOne(@Param('id') id: string) {
     return this.blogsService.findOne(+id);
   }
+  @Get('slug/:slug')
+  @ApiOperation({ summary: '获取博客详情', description: '通过slug获取单个博客详情' })
+  @ApiParam({ name: 'slug', description: '博客slug', example: 'hello-world' })
+  findOneBySlug(@Param('slug') slug: string) {
+    return this.blogsService.findOneBySlug(slug);
+  }
+
+
 
   @Patch(':id')
   @ApiOperation({ summary: '更新博客', description: '通过ID更新博客信息' })

@@ -118,4 +118,16 @@ export class BlogsService {
       pageSize: +pageSize,
     };
   }
+
+  // 通过slug查询单个博客
+  async findOneBySlug(slug: string): Promise<Blog> {
+    const blog = await this.blogRepository.findOne({
+      where: { slug },
+      relations: ['tags', 'stats'],
+    });
+    if (!blog) {
+      throw new NotFoundException(`slug 为 ${slug} 的博客不存在`);
+    }
+    return blog;
+  }
 }
