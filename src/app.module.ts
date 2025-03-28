@@ -23,6 +23,7 @@ import { Dept } from './dept/entities/dept.entity';
 import { Role } from './role/entities/role.entity'; 
 import { Menu } from './menu/entities/menu.entity'; 
 import { RoleMenu } from './role_menu/entities/role_menu.entity'; 
+import { Note } from './notes/entities/note.entity';
 import { RoleDept } from './role_dept/entities/role_dept.entity'; 
 import { UserPost } from './user_post/entities/user_post.entity'; 
 import { DictType } from './dict_type/entities/dict_type.entity'; 
@@ -41,6 +42,7 @@ import { BlogsModule } from './blogs/blogs.module';
 import { TagModule } from './tag/tag.module';
 
 import { AiModule } from './ai/ai.module';
+import { NotesModule } from './notes/notes.module';
 
 
 @Module({
@@ -58,7 +60,7 @@ import { AiModule } from './ai/ai.module';
         username: configService.get('DATABASE_USERNAME'),
         password: configService.get('DATABASE_PASSWORD'),
         database: configService.get('DATABASE_NAME'),
-        entities: [SysUser,RoleMenu,RoleDept,UserPost,Menu,Post,Role,DictType,DictDatum,Dept,Contact,UserRole,Config,Tag,Blog,BlogStats],
+        entities: [SysUser,RoleMenu,RoleDept,UserPost,Menu,Post,Role,DictType,DictDatum,Dept,Contact,UserRole,Config,Tag,Blog,BlogStats,Note],
         synchronize: true,
       }),
     }),
@@ -80,6 +82,7 @@ import { AiModule } from './ai/ai.module';
     BlogsModule,
     TagModule,
     AiModule,
+    NotesModule,
   ],
 })
 export class AppModule {}
