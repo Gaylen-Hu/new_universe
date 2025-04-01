@@ -19,6 +19,12 @@ export class BlogsController {
   async findList(@Query() query: ListBlogDto) {
     return this.blogsService.findList(query);
   }
+  // 获取推荐随笔
+  @Get('recommend')
+  @ApiOperation({ summary: '获取推荐博客', description: '获取推荐博客列表' })
+  async recommend(@Query() query: ListBlogDto) {
+    return this.blogsService.recommend(query);
+  }
 
 
   @Post()
@@ -61,7 +67,12 @@ export class BlogsController {
   findOneBySlug(@Param('slug') slug: string) {
     return this.blogsService.findOneBySlug(slug);
   }
-
+  @Patch(':id/publish')
+  @ApiOperation({ summary: '发布博客', description: '通过ID发布博客' })
+  @ApiParam({ name: 'id', description: '博客ID', example: 1 })
+  publish(@Param('id') id: string) {
+    return this.blogsService.publish(+id);
+  }
 
 
   @Patch(':id')
@@ -77,4 +88,6 @@ export class BlogsController {
   remove(@Param('id') id: string) {
     return this.blogsService.remove(+id);
   }
+  // 发布
+ 
 }

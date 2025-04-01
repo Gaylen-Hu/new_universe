@@ -4,6 +4,7 @@ import {
     IsOptional, 
     IsArray, 
     IsUrl, 
+    IsIn,
     MaxLength, 
     MinLength,
     ArrayMaxSize,
@@ -12,18 +13,7 @@ import {
   } from 'class-validator';
   import { Type } from 'class-transformer';
   
-  // 媒体资源类型定义
-  class MediaResourceDto {
-    @IsEnum(['image', 'video', 'audio'], { message: '类型必须是 image/video/audio' })
-    type: string;
-  
-    @IsUrl({}, { message: '必须是合法的URL地址' })
-    url: string;
-  
-    @IsOptional()
-    @IsUrl({}, { message: '缩略图必须是合法的URL' })
-    thumbnail?: string;
-  }
+
   
   export class CreateNoteDto {
     @IsNotEmpty({ message: '内容不能为空' })
@@ -35,7 +25,15 @@ import {
     @IsNotEmpty({ message: '内容不能为空' })
     @IsString()
     mediaResources?: string;
-  
+    
+
+    // locale zh-CN or en-US default zh-CN
+    @IsNotEmpty({ message: '语言不能为空' })
+    @IsOptional()
+    @IsIn(['zh-CN', 'en-US'], { 
+        message: '地区只能是 zh-CN 或 en-US' 
+      })
+    locale?: string;
    
 
     @IsString()

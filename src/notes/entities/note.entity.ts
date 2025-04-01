@@ -30,6 +30,14 @@ export class Note {
   })
   location?: string;
 
+  @Column({
+    type: 'varchar',
+    length: 10,
+    default: 'zh-CN',
+    comment: '语言地区编码 (zh-CN/en-US)'
+  })
+  locale: string;
+
   @Column({ 
     type: 'timestamp', 
     default: () => 'CURRENT_TIMESTAMP' 

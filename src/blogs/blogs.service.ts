@@ -86,7 +86,7 @@ export class BlogsService {
 
   // 查询博客列表
   async findList(query: any): Promise<any> {
-    const { page = 1, pageSize = 10, title, status, tag, createTime, updateTime } = query;
+    const { page = 1, pageSize = 10, title, status, tag, createTime, updateTime,locale } = query;
     const where: any = {};
     if (title) {
       where.title = title;
@@ -102,6 +102,9 @@ export class BlogsService {
     }
     if (updateTime) {
       where.updateTime = updateTime;
+    }
+    if (locale) {
+      where.lang = locale;
     }
 
     const [list, total] = await this.blogRepository.findAndCount({
@@ -129,5 +132,30 @@ export class BlogsService {
       throw new NotFoundException(`slug 为 ${slug} 的博客不存在`);
     }
     return blog;
+  }
+  // recommend
+  async recommend(query: any): Promise<any> {
+    const { page = 1, pageSize = 10, locale } = query;
+    const [list, total] = await this.blogRepository.findAndCount({
+      take: +pageSize,
+      skip: (+page - 1) * +pageSize,
+      where: {
+        lang: locale,
+      },
+      relations: ['tags', 'stats'],
+    });
+    return {
+      rows: list,
+      total,
+      page: +page,
+      pageSize: +pageSize,
+    };
+  }
+
+  // publish
+  async publish(id: number): Promise<Blog> {
+    const blog = await this.findOne(id);
+    blog.status = 'published';
+    return await this.blogRepository.save(blog);
   }
 }

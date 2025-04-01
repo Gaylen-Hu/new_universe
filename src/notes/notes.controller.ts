@@ -28,9 +28,15 @@ export class NotesController {
   }
   @ApiOperation({ summary: '获取随笔列表' })
   @Get('list')
-
    async list(@Req() req: Request) {
     return this.notesService.list(req.query); 
+  }
+  // 获取推荐随笔
+  @ApiOperation({ summary: '获取推荐随笔' })
+  @Get('recommend')
+  async recommend(@Req() req: Request) {
+    console.log(req.query);
+    return this.notesService.recommend(req.query);
   }
 
   @ApiOperation({ summary: '根据ID获取随笔' })

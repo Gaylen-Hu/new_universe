@@ -34,7 +34,7 @@ export class NotesService {
   }
   
   async list(query: any): Promise<any> {
-    const { page = 1, pageSize = 10, content, tags, createdAt } = query;
+    const { page = 1, pageSize = 10, content, tags, createdAt,locale } = query;
     const where: any = {};
     if (content) {
       where.content = In(content.split(','));
@@ -45,10 +45,32 @@ export class NotesService {
     if (createdAt) {
       where.createdAt = Between(createdAt.split(',')[0], createdAt.split(',')[1]);
     }
+
+    if (locale) {
+      where.locale = locale;
+    }
     const [list, total] = await this.noteRepository.findAndCount({
       where,
       take: +pageSize,
       skip: (+page - 1) * +pageSize,
+    });
+    return {
+      rows: list,
+      total,
+      page: +page,
+      pageSize: +pageSize,
+    };
+  }
+  // recommend
+  async recommend(query: any): Promise<any> {
+    const { page = 1, pageSize = 10,locale } = query;
+    console.log('locale', locale);
+    const [list, total] = await this.noteRepository.findAndCount({
+      take: +pageSize,
+      skip: (+page - 1) * +pageSize,
+      where: {
+        locale,
+      },
     });
     return {
       rows: list,
