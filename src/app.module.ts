@@ -28,6 +28,7 @@ import { RoleDept } from './role_dept/entities/role_dept.entity';
 import { UserPost } from './user_post/entities/user_post.entity'; 
 import { DictType } from './dict_type/entities/dict_type.entity'; 
 import { DictDatum } from './dict_data/entities/dict_datum.entity';
+import {File} from './file/entities/file.entity';
 import { Contact } from './contact/entities/contact.entity';
 import { Config } from './configs//entities/configs.entity'; // 使用正确的实体名
 import { Tag }    from './tag/entities/tag.entity';
@@ -43,6 +44,7 @@ import { TagModule } from './tag/tag.module';
 
 import { AiModule } from './ai/ai.module';
 import { NotesModule } from './notes/notes.module';
+import { FileModule } from './file/file.module';
 
 
 @Module({
@@ -60,7 +62,7 @@ import { NotesModule } from './notes/notes.module';
         username: configService.get('DATABASE_USERNAME'),
         password: configService.get('DATABASE_PASSWORD'),
         database: configService.get('DATABASE_NAME'),
-        entities: [SysUser,RoleMenu,RoleDept,UserPost,Menu,Post,Role,DictType,DictDatum,Dept,Contact,UserRole,Config,Tag,Blog,BlogStats,Note],
+        entities: [SysUser,RoleMenu,RoleDept,UserPost,Menu,Post,Role,DictType,DictDatum,Dept,Contact,UserRole,Config,Tag,Blog,BlogStats,Note,File],
         synchronize: true,
       }),
     }),
@@ -83,6 +85,7 @@ import { NotesModule } from './notes/notes.module';
     TagModule,
     AiModule,
     NotesModule,
+    FileModule,
   ],
 })
 export class AppModule {}
