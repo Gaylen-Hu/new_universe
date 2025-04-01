@@ -9,11 +9,14 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { Tag } from './entities/tag.entity';
 import { BatchDeleteDto } from './dto/batch-delete.dto';  // 引入 DTO
 
-
 @ApiTags('标签管理') // Swagger 分组名称
 @Controller('tag')
 export class TagController {
-  constructor(private readonly tagService: TagService) {}
+  constructor(
+    private readonly tagService: TagService,
+    
+
+  ) {}
 
   
   @Post('batchDelete')
@@ -23,6 +26,18 @@ export class TagController {
   async batchDelete(@Body() batchDeleteDto: BatchDeleteDto) {
     console.log(batchDeleteDto.ids);  // 输出传入的 ids 数组
     return await this.tagService.batchDelete(batchDeleteDto.ids);
+  }
+
+  // 获取所有标签及其关联文章数量
+  @Get('counts')
+  @ApiOperation({ summary: '获取所有标签及其关联文章数量', description: '获取所有标签及其关联文章数量' })
+  @ApiResponse({
+    status: 200,
+    description: '返回所有标签及其关联文章数量',
+    type: [Tag],
+  })
+  async getTagCounts() {
+    return await this.tagService.findAllWithCount();
   }
 
 

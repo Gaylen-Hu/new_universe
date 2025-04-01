@@ -30,17 +30,44 @@ export class BlogsController {
   @Post()
   @ApiOperation({ summary: '创建博客', description: '创建一个新的博客' })
   @ApiResponse({ status: 201, description: '博客创建成功' })
-  create(@Body() createBlogDto: CreateBlogDto) {
-    const generateSlug = (title: string) => {
-      // 将符号转换为连字符
-      const cleanedTitle = title.replace(/[^\w\s\u4e00-\u9fa5]/g, '-'); // 替换所有非字母、数字、中文字符为连字符
-      const slug = slugify(cleanedTitle, {
-        lower: true,
-        strict: true, // 保证生成规范的slug
-      });
+  async create(@Body() createBlogDto: CreateBlogDto) {
+
+    const existingBlogs = await this.blogsService.findAll(); // 假设这是获取所有博客的方法
+    const existingSlugs = existingBlogs.map(blog => blog.slug);
+    const generateSlug = (title: string, existingSlugs: string[] = []): string => {
+      if (!title || typeof title !== 'string') return '';
+      
+      // 1. 预处理：替换各种符号为连字符，保留中文字符
+      let slug = title
+        .replace(/[^\w\s\u4e00-\u9fa5-]/g, '-') // 保留已有的连字符
+        .replace(/[\s_]+/g, '-') // 将空格和下划线转为连字符
+        .replace(/-+/g, '-') // 合并连续的连字符
+        .replace(/^-|-$/g, ''); // 移除首尾的连字符
+    
+      // 2. 使用更智能的slugify处理（如果可用）
+      if (typeof slugify === 'function') {
+        slug = slugify(slug, {
+          lower: true,
+          strict: true,
+          remove: /[*+~.()'"!:@]/g, // 移除更多特殊字符
+          locale: 'zh', // 中文支持
+        });
+      }
+    
+      // 3. 确保唯一性
+      if (existingSlugs && existingSlugs.includes(slug)) {
+        let counter = 1;
+        let uniqueSlug = `${slug}-${counter}`;
+        while (existingSlugs.includes(uniqueSlug)) {
+          counter++;
+          uniqueSlug = `${slug}-${counter}`;
+        }
+        return uniqueSlug;
+      }
+    
       return slug;
     };
-    const slug = generateSlug(  createBlogDto.title);
+    const slug = generateSlug(createBlogDto.title, existingSlugs);
   
     console.log(' createBlogDto.summary', createBlogDto.summary);
     createBlogDto.slug = slug;

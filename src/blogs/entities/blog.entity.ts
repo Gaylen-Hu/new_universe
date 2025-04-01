@@ -16,7 +16,7 @@ export class Blog {
     @Column({ type: 'text', nullable: false, comment: '博客内容' })
     content: string;
 
-    @ManyToMany(() => Tag, { cascade: true })
+    @ManyToMany(() => Tag, tag => tag.blogs)
     @JoinTable()
     tags: Tag[];
 

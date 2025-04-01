@@ -97,4 +97,18 @@ export class TagService {
     console.log(ids);
     await this.tagRepository.delete({ id: In(ids) });
   }
+  async findAllWithCount(): Promise<{ name: string; count: number }[]> {
+    const tagsWithCount = await this.tagRepository
+    .createQueryBuilder('tag')
+    .leftJoin('tag.blogs', 'blog')
+    .select(['tag.name', 'COUNT(blog.blog_id) as count'])
+    .groupBy('tag.id')
+    .getRawMany();
+
+  // 转换结果为所需格式
+  return tagsWithCount.map(tag => ({
+    name: tag.tag_name,
+    count: parseInt(tag.count, 10),
+  }));
+  }
 }

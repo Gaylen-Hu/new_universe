@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn,ManyToMany } from 'typeorm';
+import { Blog } from '../../blogs/entities/blog.entity';
 
 @Entity('tags')
 export class Tag {
@@ -10,6 +11,8 @@ export class Tag {
 
     @Column({ type: 'varchar', length: 255, nullable: true, comment: '标签描述' })
     description: string;
+
+
 
     @Column({
         type: 'enum',
@@ -30,4 +33,7 @@ export class Tag {
 
     @UpdateDateColumn({ type: 'datetime', nullable: true, comment: '最后更新时间' })
     update_time: Date | null;
+
+    @ManyToMany(() => Blog, blog => blog.tags)
+    blogs: Blog[];
 }
