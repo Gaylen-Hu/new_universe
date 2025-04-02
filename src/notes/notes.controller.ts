@@ -54,7 +54,13 @@ export class NotesController {
   update(@Param('id') id: string, @Body() updateNoteDto: UpdateNoteDto) {
     return this.notesService.update(+id, updateNoteDto);
   }
-
+// 批量删除
+@ApiOperation({ summary: '批量删除随笔' })
+@ApiResponse({ status: 200, description: '随笔删除成功。' })
+@Post('batchRemove')
+async batchRemove(@Body() body: { ids: string }) {
+  return this.notesService.batchRemove(body.ids);
+}
   @ApiOperation({ summary: '删除随笔' })
   @ApiResponse({ status: 200, description: '随笔删除成功。' })
   @ApiResponse({ status: 404, description: '随笔未找到。' })
@@ -62,4 +68,5 @@ export class NotesController {
   remove(@Param('id') id: string) {
     return this.notesService.remove(+id);
   }
+  
 }

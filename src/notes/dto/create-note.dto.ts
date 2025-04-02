@@ -22,7 +22,6 @@ import {
     @MinLength(1, { message: '内容至少1个字' })
     content: string;
 
-    @IsNotEmpty({ message: '内容不能为空' })
     @IsString()
     mediaResources?: string;
     

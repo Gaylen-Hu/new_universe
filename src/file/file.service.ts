@@ -1,9 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, Like, In, Between } from 'typeorm';
+import { File } from './entities/file.entity';
+import { CreateFileDto } from './dto/create-file.dto';
+import { UpdateFileDto } from './dto/update-file.dto';
+import { PaginationDto } from '../common/dto/pagination.dto';
 import { ConfigService } from '@nestjs/config';
 const { STS } = require('ali-oss');
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { File } from './entities/file.entity';
 
 @Injectable()
 export class FileService {
@@ -52,7 +55,140 @@ export class FileService {
       ],
     });
   }
-  async saveFileInfo(fileInfo: Partial<File>): Promise<File> {
-    return this.fileRepository.save(fileInfo);
+
+  /**
+   * 创建文件记录（仅数据库）
+   */
+  async create(createFileDto: CreateFileDto): Promise<File> {
+    const file = this.fileRepository.create({
+      ...createFileDto,
+      // 自动生成必要字段（如有需要）
+      createdAt: new Date()
+    });
+    return this.fileRepository.save(file);
+  }
+
+  /**
+   * 分页查询文件列表
+   */
+  async paginate({
+    page = 1,
+    limit = 10,
+    mimeType,
+    keyword,
+    startDate,
+    endDate
+  }: PaginationDto) {
+    const where: any = {};
+    
+    // 文件类型筛选
+    if (mimeType) {
+      where.mimeType = mimeType.includes(',') 
+        ? In(mimeType.split(',')) 
+        : mimeType;
+    }
+    
+    // 关键词搜索（文件名或描述）
+    if (keyword) {
+      where.originalName = Like(`%${keyword}%`);
+    }
+
+    // 时间范围筛选
+    if (startDate && endDate) {
+      where.createdAt = Between(
+        new Date(startDate),
+        new Date(endDate)
+      );
+    }
+
+    const [items, total] = await this.fileRepository.findAndCount({
+      where,
+      skip: (page - 1) * limit,
+      take: limit,
+      order: { createdAt: 'DESC' },
+    });
+
+    return {
+      items,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+
+  /**
+   * 获取单个文件详情
+   */
+  async findOne(id: number): Promise<File> {
+    const file = await this.fileRepository.findOne({ 
+      where: { id },
+      // 可以添加关联查询（如果有）
+    });
+    
+    if (!file) {
+      throw new NotFoundException(`文件ID ${id} 不存在`);
+    }
+    return file;
+  }
+
+  /**
+   * 更新文件元信息（标题、描述等）
+   */
+  async update(id: number, updateFileDto: UpdateFileDto): Promise<File> {
+    const file = await this.findOne(id);
+    Object.assign(file, updateFileDto);
+    return this.fileRepository.save(file);
+  }
+
+  /**
+   * 删除文件记录（仅数据库）
+   */
+  async remove(id: number): Promise<void> {
+    const file = await this.findOne(id);
+    await this.fileRepository.remove(file);
+  }
+
+  /**
+   * 批量删除文件记录
+   */
+  async batchRemove(ids: number[]): Promise<void> {
+    const files = await this.fileRepository.find({
+      where: { id: In(ids) },
+    });
+
+    if (files.length !== ids.length) {
+      const foundIds = files.map(file => file.id);
+      const missingIds = ids.filter(id => !foundIds.includes(id));
+      throw new NotFoundException(
+        `以下文件ID不存在: ${missingIds.join(', ')}`
+      );
+    }
+
+    await this.fileRepository.remove(files);
+  }
+
+  
+
+  /**
+   * 获取最近上传的文件
+   */
+  async getRecentFiles(limit = 5): Promise<File[]> {
+    return this.fileRepository.find({
+      order: { createdAt: 'DESC' },
+      take: limit,
+    });
+  }
+
+  /**
+   * 按类型统计文件数量
+   */
+  async countByType(): Promise<{ type: string; count: number }[]> {
+    return this.fileRepository
+      .createQueryBuilder('file')
+      .select('file.mimeType', 'type')
+      .addSelect('COUNT(file.id)', 'count')
+      .groupBy('file.mimeType')
+      .getRawMany();
   }
 }

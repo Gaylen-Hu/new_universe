@@ -30,7 +30,17 @@ export class NotesService {
   }
 
   async remove(id: number) {
-    return this.noteRepository.delete
+    const result = await  this.noteRepository.delete(id);
+    if (result.affected === 0) {
+      return '删除失败';
+    }
+  }
+  async batchRemove(ids: string) {
+    const idArr = ids.split(',');
+    const result = await this.noteRepository.delete(idArr);
+    if (result.affected === 0) {
+      return '删除失败';
+    }
   }
   
   async list(query: any): Promise<any> {

@@ -4,11 +4,14 @@ import { Repository } from 'typeorm';
 import { Blog } from '../blogs/entities/blog.entity';
 import OpenAI from "openai";
 import { Observable } from 'rxjs';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
 @Injectable()
 export class AiService {
   private openai: OpenAI;
-
+  private arkai: OpenAI; // 豆包/方舟AI客户端
   constructor(
+    private readonly httpService: HttpService,
     @InjectRepository(Blog) private readonly blogRepository: Repository<Blog>,
   ) {
     this.openai = new OpenAI({
@@ -16,13 +19,19 @@ export class AiService {
       apiKey: process.env.OPENAI_API_KEY, // Get API key from environment variables
       // You can add other configuration options here if needed
     });
+    // 豆包/方舟AI客户端
+    this.arkai = new OpenAI({
+      baseURL: 'https://ark.cn-beijing.volces.com/api/v3',
+      apiKey: process.env.ARK_API_KEY,
+    });
+
   }
 
   async generateSeoInfo(content: string): Promise<string> {
     try {
       const completion = await this.openai.chat.completions.create(
         {
-        model: "deepseek-chat", // or "gpt-4" if you have access
+        model: "Doubao-1.5-vision-pro-32k", // or "gpt-4" if you have access
         messages: [
           {
             "role": "system",
@@ -101,4 +110,58 @@ export class AiService {
     }
     return blog.content;
   }
+
+  async generateImageSeoInfo(url: string): Promise<string> {
+    const apiKey = process.env.ARK_API_KEY
+    const model = 'doubao-1-5-vision-pro-32k-250115'; // 火山引擎的视觉模型
+    try {
+      const response = await firstValueFrom(
+        this.httpService.post(
+          'https://ark.cn-beijing.volces.com/api/v3/chat/completions',
+          {
+            model,
+            messages: [
+              {
+                role: 'user',
+                content: [
+                  {
+                    type: 'text',
+                    text: `你是一个专业的图像分析助手，负责从图片中提取关键信息并生成SEO相关内容。
+                    你需要返回一个严格的JSON对象，包含以下字段：
+                                    - title: 根据图片内容总结的标题
+                                    - description: 图片的详细描述
+                                    - altText: 相关标签，用逗号分隔
+                                    
+                                    注意：只返回JSON对象，不要包含任何额外的说明、标记或格式符号`,
+                  },
+                  {
+                    type: 'image_url',
+                    image_url: { url: url },
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${apiKey}`,
+            },
+          },
+        ),
+      );
+      // <output>\n{\n  \"title\": \"办公桌面物品展示\",\n  \"description\": \"白色桌面上摆放着一个白色键盘，键盘左侧有两支金色的笔，右上方有一副金色边框的眼镜，右下角是一个带横线内页的笔记本。\",\n  \"altText\": \"键盘,笔,眼镜,笔记本,办公用品\"\n}\n</output>
+      // 我要json格式的数据
+      
+      const content = response.data.choices[0].message.content;
+        return JSON.parse(content);
+
+
+
+    } catch (error) {
+      console.error('火山API调用失败:', error.response?.data || error.message);
+      throw new Error('图片分析失败');
+    }
+  }
 }
+
