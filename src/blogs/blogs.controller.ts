@@ -100,6 +100,13 @@ export class BlogsController {
   publish(@Param('id') id: string) {
     return this.blogsService.publish(+id);
   }
+  // unpublish
+  @Patch(':id/unpublish')
+  @ApiOperation({ summary: '取消发布博客', description: '通过ID取消发布博客' })
+  @ApiParam({ name: 'id', description: '博客ID', example: 1 })
+  unpublish(@Param('id') id: string) {
+    return this.blogsService.unpublish(+id);
+  }
 
 
   @Patch(':id')

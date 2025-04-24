@@ -158,4 +158,10 @@ export class BlogsService {
     blog.status = 'published';
     return await this.blogRepository.save(blog);
   }
+  // unpublish
+  async unpublish(id: number): Promise<Blog> {
+    const blog = await this.findOne(id);
+    blog.status = 'draft';
+    return await this.blogRepository.save(blog);
+  }
 }
